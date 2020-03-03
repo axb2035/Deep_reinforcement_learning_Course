@@ -15,7 +15,7 @@ from baselines.common.atari_wrappers import FrameStack
 import cv2
 
 # setUseOpenCL = False means that we will not use GPU (disable OpenCL acceleration)
-cv2.ocl.setUseOpenCL(False)
+cv2.ocl.setUseOpenCL(True)
 
 class PreprocessFrame(gym.ObservationWrapper):
     """
@@ -114,13 +114,13 @@ def make_env(env_idx):
     """
 
     dicts = [
-        {'game': 'SonicTheHedgehog2-Genesis', 'state': 'EmeraldHillZone.Act1'},
-        {'game': 'SonicTheHedgehog2-Genesis', 'state': 'ChemicalPlantZone.Act2'},
-        {'game': 'SonicTheHedgehog2-Genesis', 'state': 'ChemicalPlantZone.Act1'},
-        {'game': 'SonicTheHedgehog2-Genesis', 'state': 'MetropolisZone.Act1'},
-        {'game': 'SonicTheHedgehog2-Genesis', 'state': 'MetropolisZone.Act2'},
-        {'game': 'SonicTheHedgehog2-Genesis', 'state': 'OilOceanZone.Act1'},
-        {'game': 'SonicTheHedgehog2-Genesis', 'state': 'OilOceanZone.Act2'},
+        # {'game': 'SonicTheHedgehog2-Genesis', 'state': 'EmeraldHillZone.Act1'},
+        # {'game': 'SonicTheHedgehog2-Genesis', 'state': 'ChemicalPlantZone.Act2'},
+        # {'game': 'SonicTheHedgehog2-Genesis', 'state': 'ChemicalPlantZone.Act1'},
+        # {'game': 'SonicTheHedgehog2-Genesis', 'state': 'MetropolisZone.Act1'},
+        # {'game': 'SonicTheHedgehog2-Genesis', 'state': 'MetropolisZone.Act2'},
+        # {'game': 'SonicTheHedgehog2-Genesis', 'state': 'OilOceanZone.Act1'},
+        # {'game': 'SonicTheHedgehog2-Genesis', 'state': 'OilOceanZone.Act2'},
         {'game': 'SonicAndKnuckles3-Genesis', 'state': 'LavaReefZone.Act2'},
         {'game': 'SonicAndKnuckles3-Genesis', 'state': 'CarnivalNightZone.Act2'},
         {'game': 'SonicAndKnuckles3-Genesis', 'state': 'CarnivalNightZone.Act1'},
@@ -131,7 +131,7 @@ def make_env(env_idx):
     # Make the environment
     print(dicts[env_idx]['game'], dicts[env_idx]['state'], flush=True)
     #record_path = "./records/" + dicts[env_idx]['state']
-    env = make(game=dicts[env_idx]['game'], state=dicts[env_idx]['state'])#, bk2dir="./records")#record='/tmp')
+    env = make(game=dicts[env_idx]['game'], state=dicts[env_idx]['state'], bk2dir="./records")#record='/tmp')
 
     # Build the actions array, 
     env = ActionsDiscretizer(env)
@@ -158,13 +158,13 @@ def make_test():
     Create an environment with some standard wrappers.
     
     dicts = [
-        {'game': 'SonicTheHedgehog2-Genesis', 'state': 'EmeraldHillZone.Act1'},
-        {'game': 'SonicTheHedgehog2-Genesis', 'state': 'ChemicalPlantZone.Act2'},
-        {'game': 'SonicTheHedgehog2-Genesis', 'state': 'ChemicalPlantZone.Act1'},
-        {'game': 'SonicTheHedgehog2-Genesis', 'state': 'MetropolisZone.Act1'},
-        {'game': 'SonicTheHedgehog2-Genesis', 'state': 'MetropolisZone.Act2'},
-        {'game': 'SonicTheHedgehog2-Genesis', 'state': 'OilOceanZone.Act1'},
-        {'game': 'SonicTheHedgehog2-Genesis', 'state': 'OilOceanZone.Act2'},
+        # {'game': 'SonicTheHedgehog2-Genesis', 'state': 'EmeraldHillZone.Act1'},
+        # {'game': 'SonicTheHedgehog2-Genesis', 'state': 'ChemicalPlantZone.Act2'},
+        # {'game': 'SonicTheHedgehog2-Genesis', 'state': 'ChemicalPlantZone.Act1'},
+        # {'game': 'SonicTheHedgehog2-Genesis', 'state': 'MetropolisZone.Act1'},
+        # {'game': 'SonicTheHedgehog2-Genesis', 'state': 'MetropolisZone.Act2'},
+        # {'game': 'SonicTheHedgehog2-Genesis', 'state': 'OilOceanZone.Act1'},
+        # {'game': 'SonicTheHedgehog2-Genesis', 'state': 'OilOceanZone.Act2'},
         {'game': 'SonicAndKnuckles3-Genesis', 'state': 'LavaReefZone.Act2'},
         {'game': 'SonicAndKnuckles3-Genesis', 'state': 'CarnivalNightZone.Act2'},
         {'game': 'SonicAndKnuckles3-Genesis', 'state': 'CarnivalNightZone.Act1'},
@@ -174,7 +174,7 @@ def make_test():
     ]
     """
     # Here we add record because we want to output a video
-    env = make(game="SonicAndKnuckles3-Genesis", state="AngelIslandZone.Act1")
+    env = make(game="SonicAndKnuckles3-Genesis", state="MushroomHillZone.Act1")
 
     # Build the actions array, 
     env = ActionsDiscretizer(env)

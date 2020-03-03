@@ -48,7 +48,7 @@ class Model(object):
                 max_grad_norm):
 
         sess = tf.get_default_session()
-
+        print('Initializing model...')
 
         # CREATE THE PLACEHOLDERS
         actions_ = tf.placeholder(tf.int32, [None], name="actions_")
@@ -61,18 +61,19 @@ class Model(object):
         oldvpred_ = tf.placeholder(tf.float32, [None], name="oldvpred_")
         # Cliprange
         cliprange_ = tf.placeholder(tf.float32, [])
-
-
+        print('Placeholders created...')
+        
         # CREATE OUR TWO MODELS
         # Step_model that is used for sampling
         step_model = policy(sess, ob_space, action_space, nenvs, 1, reuse=False)
-
+        print('Step model created...')
+        
         # Test model for testing our agent
         #test_model = policy(sess, ob_space, action_space, 1, 1, reuse=False)
 
         # Train model for training
         train_model = policy(sess, ob_space, action_space, nenvs*nsteps, nsteps, reuse=True)
-
+        print('Train model created...')
 
 
         # CALCULATE THE LOSS
@@ -127,7 +128,8 @@ class Model(object):
         # Total loss (Remember that L = - J because it's the same thing than max J
         loss = pg_loss - entropy * ent_coef + vf_loss * vf_coef
 
-
+        print('Clip and loss calculated...')
+        
         # UPDATE THE PARAMETERS USING LOSS
         # 1. Get the model parameters
         params = find_trainable_variables("model")
@@ -146,7 +148,7 @@ class Model(object):
 
         # 4. Backpropagation
         _train = trainer.apply_gradients(grads)
-
+        print('Params updated... initilization complete')
 
         # Train function
         def train(states_in, actions, returns, values, neglogpacs, lr, cliprange):
@@ -332,7 +334,9 @@ def learn(policy,
 
     noptepochs = 4
     nminibatches = 8
-
+    
+    print('In learn!')
+    
     if isinstance(lr, float): lr = constfn(lr)
     else: assert callable(lr)
     if isinstance(cliprange, float): cliprange = constfn(cliprange)
@@ -347,11 +351,14 @@ def learn(policy,
 
     # Calculate the batch_size
     batch_size = nenvs * nsteps # For instance if we take 5 steps and we have 5 environments batch_size = 25
-
+    print("batch size", batch_size)
+    
     batch_train_size = batch_size // nminibatches
-
+    print("batch train size", batch_train_size)
+    
     assert batch_size % nminibatches == 0
 
+    print('model config complete')
     # Instantiate the model object (that creates step_model and train_model)
     model = Model(policy=policy,
                 ob_space=ob_space,
@@ -364,30 +371,46 @@ def learn(policy,
 
     # Load the model
     # If you want to continue training
-    # load_path = "./models/40/model.ckpt"
-    # model.load(load_path)
-
+    model_num = 3540
+    load_path = "./models/" + str(model_num) + "/model.ckpt"
+    model.load(load_path)
+    start_update = model_num + 1
+    
+    print('Model instansiated')
     # Instantiate the runner object
     runner = Runner(env, model, nsteps=nsteps, total_timesteps=total_timesteps, gamma=gamma, lam=lam)
 
+    print('Runner instansiated')
+    
     # Start total timer
     tfirststart = time.time()
 
     nupdates = total_timesteps//batch_size+1
-
-    for update in range(1, nupdates+1):
+    # print("nupdates", nupdates)
+    
+    # mini_batch = -1
+    mini_batch = model_num
+    
+    for update in range(start_update, model_num+nupdates+1):
         # Start timer
         tstart = time.time()
 
-        frac = 1.0 - (update - 1.0) / nupdates
-
+        #print("Update:", update)
+        
+        frac = 1.0 - ((update - start_update) - 1.0) / nupdates
+        #print("Frac:", str(frac))
+    
         # Calculate the learning rate
         lrnow = lr(frac)
-
+        #print("Learning rate:", str(lrnow))
+        
         # Calculate the cliprange
         cliprangenow = cliprange(frac)
-
+        #print("Clip range:", str(cliprangenow))
+        
         # Get minibatch
+        mini_batch += 1 
+        print('Getting minibatch', mini_batch)
         obs, actions, returns, values, neglogpacs = runner.run()
 
         # Here what we're going to do is for each minibatch calculate the loss and append it.
@@ -398,10 +421,10 @@ def learn(policy,
         # Create the indices array
         indices = np.arange(batch_size)
 
-        for _ in range(noptepochs):
+        for epoch in range(noptepochs):
             # Randomize the indexes
             np.random.shuffle(indices)
-
+            # print('Epoch:', epoch)
             # 0 to batch_size with batch_train_size step
             for start in range(0, batch_size, batch_train_size):
                 end = start + batch_train_size
@@ -445,7 +468,7 @@ def learn(policy,
 
             # Test our agent with 3 trials and mean the score
             # This will be useful to see if our agent is improving
-            test_score = testing(model)
+            test_score = testing(model) #, env
 
             logger.record_tabular("Mean score test level", test_score)
             logger.dump_tabular()
@@ -457,13 +480,14 @@ def safemean(xs):
     return np.nan if len(xs) == 0 else np.mean(xs)
 
 
-def testing(model):
+def testing(model): #, env
     """
     We'll use this function to calculate the score on test levels for each saved model,
     to generate the video version
     to generate the map version
     """
 
+    # test_env = env
     test_env = DummyVecEnv([sonic_env.make_test])
 
     # Get state_space and action_space
@@ -573,27 +597,38 @@ def play(policy, env, update):
     # Load the model
     load_path = "./models/"+ str(update) + "/model.ckpt"
     print(load_path)
+    try:
+        model.load(load_path)
+        print("Success - loaded model - ", load_path)
+    except:
+        print("Could not load model - ", load_path)
+        env.close()
+        return -1
 
     obs = env.reset()
-
+    
     # Play
     score = 0
     done = False
-
+    action_list = []
+    
     while done == False:
         # Get the action
         actions, values, _ = model.step(obs)
+        action_list.append(actions)
         
         # Take actions in env and look the results
         obs, rewards, done, info = env.step(actions)
         
         score += rewards
     
-        env.render()
+        env.render(mode='human')
         
     print("Score ", score)
-    env.close()
     
+    # env.render(close=True)
+    env.close()
+    return action_list[0:999]  
 
 
 
