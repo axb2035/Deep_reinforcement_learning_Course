@@ -28,26 +28,27 @@ config.gpu_options.allow_growth = True
 
 with tf.Session(config=config):
     
-    env = DummyVecEnv([env.make_train_4])
+    env = DummyVecEnv([env.make_test])
+    update = 1500
     
     actions = model.play(policy=policies.PPOPolicy, 
                          env=env, 
-                         update=1)
+                         update=update)
 
 env.close()
 
-# from matplotlib import pyplot as plt
-# if actions != -1:
-#     plt.plot(actions)
-#     plt.show()
+from matplotlib import pyplot as plt
+if actions != -1:
+    plt.plot(actions)
+    plt.show()
     
-#     unique, counts = np.unique(actions, return_counts=True)
-#     action_groups = dict(zip(unique, counts))
-#     plt.bar(range(len(action_groups)), list(action_groups.values()), align='center')
-#     plt.xticks(np.arange(7), ['LEFT', 'RIGHT', 'LEFT+DOWN', 'RIGHT+DOWN', 'DOWN',
-#                        'DOWN+B', 'B'], rotation=45)
-#     plt.gca().set_ylabel('Count')
-#     plt.title('Model 500 - First 1000 actions')
+    unique, counts = np.unique(actions, return_counts=True)
+    action_groups = dict(zip(unique, counts))
+    plt.bar(range(len(action_groups)), list(action_groups.values()), align='center')
+    plt.xticks(np.arange(7), ['LEFT', 'RIGHT', 'LEFT+DOWN', 'RIGHT+DOWN', 'DOWN',
+                        'DOWN+B', 'B'], rotation=45)
+    plt.gca().set_ylabel('Count')
+    plt.title('Model ' + str(update) + ' - First 1000 actions')
 
 
 

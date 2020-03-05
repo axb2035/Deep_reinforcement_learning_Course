@@ -48,9 +48,22 @@ def main():
                                                  env.make_train_2,
                                                  env.make_train_3,
                                                  env.make_train_4,
-                                                 env.make_train_5]),
+                                                 env.make_train_5,
+                                                 env.make_train_6,
+                                                 env.make_train_7,
+                                                 env.make_train_8,
+                                                 env.make_train_9,
+                                                 env.make_train_10,
+                                                 env.make_train_11,
+                                                 env.make_train_12,
+                                                 env.make_train_13,
+                                                 env.make_train_14,
+                                                 env.make_train_15,
+                                                 env.make_train_16,
+                                                 env.make_train_17]),
+                                                 # env.make_train_18]),
                             nsteps=2048, # Steps per environment
-                            total_timesteps=9830399,
+                            total_timesteps=1474560,
                             #total_timesteps=10000000,
                             gamma=0.99,
                             lam = 0.95,
@@ -63,7 +76,7 @@ def main():
                             )
     
     t_end = time.time()
-    print("Time elapsed", str(t_end - t_start))
+    print("Time elapsed", time.strftime('%H:%M:%S', t_end - t_start))
     
 if __name__ == '__main__':
     main()

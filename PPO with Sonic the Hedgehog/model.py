@@ -302,7 +302,7 @@ class Runner(AbstractEnvRunner):
         # Returns
         mb_returns = mb_advantages + mb_values
 
-        return map(sf01, (mb_obs, mb_actions, mb_returns, mb_values, mb_neglopacs))
+        return map(sf01, (mb_obs, mb_actions, mb_returns, mb_values, mb_neglopacs, mb_rewards))
 
 
 def sf01(arr):
@@ -344,7 +344,8 @@ def learn(policy,
 
     # Get the nb of env
     nenvs = env.num_envs
-
+    print(nenvs, "environments created.")
+    
     # Get state_space and action_space
     ob_space = env.observation_space
     ac_space = env.action_space
@@ -354,6 +355,7 @@ def learn(policy,
     print("batch size", batch_size)
     
     batch_train_size = batch_size // nminibatches
+    
     print("batch train size", batch_train_size)
     
     assert batch_size % nminibatches == 0
@@ -368,13 +370,15 @@ def learn(policy,
                 ent_coef=ent_coef,
                 vf_coef=vf_coef,
                 max_grad_norm=max_grad_norm)
-
-    # Load the model
-    # If you want to continue training
-    model_num = 3540
-    load_path = "./models/" + str(model_num) + "/model.ckpt"
-    model.load(load_path)
-    start_update = model_num + 1
+    
+    model_num = 1460
+    start_update = 1
+    
+    # Load the model if you want to continue training
+    if model_num > 1:
+        load_path = "./models/" + str(model_num) + "/model.ckpt"
+        model.load(load_path)
+        start_update = model_num + 1
     
     print('Model instansiated')
     # Instantiate the runner object
@@ -386,12 +390,12 @@ def learn(policy,
     tfirststart = time.time()
 
     nupdates = total_timesteps//batch_size+1
-    # print("nupdates", nupdates)
+    print("nupdates", nupdates)
     
-    # mini_batch = -1
-    mini_batch = model_num
+    mini_batch = model_num - 1
     
     for update in range(start_update, model_num+nupdates+1):
+        print("Update", update)
         # Start timer
         tstart = time.time()
 
@@ -409,10 +413,10 @@ def learn(policy,
         #print("Clip range:", str(cliprangenow))
         
         # Get minibatch
-        mini_batch += 1 
-        print('Getting minibatch', mini_batch)
-        obs, actions, returns, values, neglogpacs = runner.run()
+        obs, actions, returns, values, neglogpacs, rewards = runner.run()
 
+        mean_reward = np.mean(rewards*100)
+        
         # Here what we're going to do is for each minibatch calculate the loss and append it.
         mb_losses = []
         total_batches_train = 0
@@ -441,8 +445,9 @@ def learn(policy,
 
         # Calculate the fps (frame per second)
         fps = int(batch_size / (tnow - tstart))
-
-        if update % log_interval == 0 or update == 1:
+        
+        #  or update == 1
+        if update % log_interval == 0:
             """
             Computes fraction of variance that ypred explains about y.
             Returns 1 - Var[y-ypred] / Var[y]
@@ -469,10 +474,13 @@ def learn(policy,
             # Test our agent with 3 trials and mean the score
             # This will be useful to see if our agent is improving
             test_score = testing(model) #, env
-
-            logger.record_tabular("Mean score test level", test_score)
+            
+            logger.record_tabular("Mean reward - train (18 levels)", mean_reward)
+            logger.record_tabular("Mean score - test (1 level)", test_score)
             logger.dump_tabular()
             
+            # print("Serial timesteps", str(update*nsteps))
+            # print("Total timesteps", str(update*batch_size))
     env.close()
 
 # Avoid error when calculate the mean (in our case if epinfo is empty returns np.nan, not return an error)
@@ -583,8 +591,8 @@ def play(policy, env, update):
     # Get state_space and action_space
     ob_space = env.observation_space
     ac_space = env.action_space
-
-    # Instantiate the model object (that creates step_model and train_model)
+        
+    # Instantiate the model object
     model = Model(policy=policy,
                 ob_space=ob_space,
                 action_space=ac_space,
@@ -595,8 +603,9 @@ def play(policy, env, update):
                 max_grad_norm=0)
     
     # Load the model
+    print("Update", update)
     load_path = "./models/"+ str(update) + "/model.ckpt"
-    print(load_path)
+    
     try:
         model.load(load_path)
         print("Success - loaded model - ", load_path)
@@ -626,7 +635,6 @@ def play(policy, env, update):
         
     print("Score ", score)
     
-    # env.render(close=True)
     env.close()
     return action_list[0:999]  
 
