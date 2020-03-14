@@ -371,14 +371,19 @@ def learn(policy,
                 vf_coef=vf_coef,
                 max_grad_norm=max_grad_norm)
     
-    model_num = 1460
+    model_num = 5250
     start_update = 1
+    best_test = 37.2213
     
     # Load the model if you want to continue training
     if model_num > 1:
-        load_path = "./models/" + str(model_num) + "/model.ckpt"
-        model.load(load_path)
-        start_update = model_num + 1
+        try:
+            load_path = "./models/" + str(model_num) + "/model.ckpt"
+            model.load(load_path)
+            start_update = model_num + 1
+        except:
+            print("Could not load model file. Aborting run.")
+            return
     
     print('Model instansiated')
     # Instantiate the runner object
@@ -391,8 +396,10 @@ def learn(policy,
 
     nupdates = total_timesteps//batch_size+1
     print("nupdates", nupdates)
+    last_update = model_num + nupdates
     
     mini_batch = model_num - 1
+    
     
     for update in range(start_update, model_num+nupdates+1):
         print("Update", update)
@@ -446,8 +453,7 @@ def learn(policy,
         # Calculate the fps (frame per second)
         fps = int(batch_size / (tnow - tstart))
         
-        #  or update == 1
-        if update % log_interval == 0:
+        if update % log_interval == 0 or update == 1:
             """
             Computes fraction of variance that ypred explains about y.
             Returns 1 - Var[y-ypred] / Var[y]
@@ -466,11 +472,7 @@ def learn(policy,
             logger.record_tabular("value_loss", float(lossvalues[1]))
             logger.record_tabular("explained_variance", float(ev))
             logger.record_tabular("time elapsed", float(tnow - tfirststart))
-            
-            savepath = "./models/" + str(update) + "/model.ckpt"
-            model.save(savepath)
-            print('Saving to', savepath)
-
+    
             # Test our agent with 3 trials and mean the score
             # This will be useful to see if our agent is improving
             test_score = testing(model) #, env
@@ -478,9 +480,14 @@ def learn(policy,
             logger.record_tabular("Mean reward - train (18 levels)", mean_reward)
             logger.record_tabular("Mean score - test (1 level)", test_score)
             logger.dump_tabular()
-            
-            # print("Serial timesteps", str(update*nsteps))
-            # print("Total timesteps", str(update*batch_size))
+    
+            if (test_score > best_test) or ((update % 50) == 0) or (update == last_update): 
+                savepath = "./models/" + str(update) + "/model.ckpt"
+                model.save(savepath)
+                print('Saving to', savepath)
+                if test_score > best_test:
+                    best_test = test_score
+
     env.close()
 
 # Avoid error when calculate the mean (in our case if epinfo is empty returns np.nan, not return an error)
@@ -620,6 +627,8 @@ def play(policy, env, update):
     score = 0
     done = False
     action_list = []
+    reward_list = []
+    info_list = []
     
     while done == False:
         # Get the action
@@ -630,13 +639,14 @@ def play(policy, env, update):
         obs, rewards, done, info = env.step(actions)
         
         score += rewards
-    
+        reward_list.append(rewards)
+        info_list.append(info)
         env.render(mode='human')
         
     print("Score ", score)
     
     env.close()
-    return action_list[0:999]  
+    return (action_list[0:999], reward_list, score, info_list)
 
 
 

@@ -130,7 +130,7 @@ def make_env(env_idx):
         {'game': 'SonicAndKnuckles3-Genesis', 'state': 'HydrocityZone.Act2'},
         {'game': 'SonicAndKnuckles3-Genesis', 'state': 'IcecapZone.Act1'},
         {'game': 'SonicAndKnuckles3-Genesis', 'state': 'IcecapZone.Act2'},
-        {'game': 'SonicAndKnuckles3-Genesis', 'state': 'AngelIslandZone.Act1'},
+        {'game': 'SonicAndKnuckles3-Genesis', 'state': 'AngelIslandZone.Act2'},
         {'game': 'SonicAndKnuckles3-Genesis', 'state': 'LaunchBaseZone.Act2'},
         {'game': 'SonicAndKnuckles3-Genesis', 'state': 'LaunchBaseZone.Act1'}
     ]
@@ -176,11 +176,11 @@ def make_test():
     # {'game': 'SonicAndKnuckles3-Genesis', 'state': 'LavaReefZone.Act1'},
     # {'game': 'SonicAndKnuckles3-Genesis', 'state': 'FlyingBatteryZone.Act2'},
     # {'game': 'SonicAndKnuckles3-Genesis', 'state': 'HydrocityZone.Act1'},
-    # {'game': 'SonicAndKnuckles3-Genesis', 'state': 'AngelIslandZone.Act2'}
+    # {'game': 'SonicAndKnuckles3-Genesis', 'state': 'AngelIslandZone.Act1'}
     # ]
     
     # Here we add record because we want to output a video
-    env = make(game="SonicAndKnuckles3-Genesis", state="LavaReefZone.Act1")
+    env = make(game="SonicAndKnuckles3-Genesis", state="AngelIslandZone.Act1")
 
     # Build the actions array, 
     env = ActionsDiscretizer(env)

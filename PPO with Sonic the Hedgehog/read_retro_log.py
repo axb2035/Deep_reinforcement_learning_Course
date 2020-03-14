@@ -8,17 +8,25 @@ Created on Sun Mar  1 07:05:14 2020
 from pandas import read_csv, concat
 from matplotlib import pyplot as plt
 
+# Load the checkpoint performance logs
+df_l = read_csv(r'C:\Users\pc\AppData\Local\Temp\openai-2020-03-06-08-09-25-729383\progress.csv')
+
 all_logs = [
-            'openai-2020-03-04-21-03-16-532842',
-            'openai-2020-03-05-18-21-57-270804',
-            'openai-2020-03-06-06-17-50-001558'
+            # Additional log directories here.
+            ['openai-2020-03-08-12-00-38-624350', 1, 37],
+            ['openai-2020-03-09-16-40-41-735069', 0, 0],
+            ['openai-2020-03-10-15-59-21-777278', 0, 0],
+            ['openai-2020-03-11-22-49-40-427426', 0, 0],
+            ['openai-2020-03-12-12-15-29-400823', 0, 0],
+            ['openai-2020-03-13-20-26-41-668112', 0, 0]
             ]
 
-df_l = read_csv(r'C:\Users\pc\AppData\Local\Temp\openai-2020-03-04-17-40-42-927222\progress.csv')
-
+# Append additional logs.
 for sl in all_logs:
-    log_path = 'C:\\Users\\pc\\AppData\\Local\\Temp\\' + sl + '\\progress.csv'
+    log_path = 'C:\\Users\\pc\\AppData\\Local\\Temp\\' + sl[0] + '\\progress.csv'
     tl = read_csv(log_path)
+    if (sl[1] > 0) or (sl[2] > 0) :
+        tl = tl[sl[1]:sl[2]]
     df_l = concat([df_l, tl])
 
 df_l.shape
@@ -26,8 +34,6 @@ df_l.shape
 df_l.rename(columns={"Mean score - test (1 level)" : "test score"}, inplace=True)
 
 df_l['test score'].max()
-
-df_l['test score'].plot()
 
 # df_l is a pandas dataframe with a that was score was generated 
 # every 10 updates.
@@ -42,7 +48,7 @@ plt.plot(np_mstl, linewidth=0.75)
 plt.title('Mean score on test level during training.')
 plt.gca().set_xlabel('Updates')
 plt.gca().set_ylabel('Mean score')
-plt.xticks(range(0, 150, 15), x_labels[::15])
+plt.xticks(range(0, x_len//10, x_len//100), x_labels[::x_len//100])
 # plt.hlines(33.6, 0, 57, color='red', linestyles='dashed', linewidth=0.75)
 #plt.gca().set_xticklabels(x_labels)
 plt.show()
@@ -53,7 +59,7 @@ plt.plot(np_train_loss, label='Train', linewidth=0.75)
 plt.title('Train / value loss during training.')
 plt.gca().set_xlabel('Updates')
 plt.gca().set_ylabel('Train loss')
-plt.xticks(range(0, x_len, 16), x_labels[::16])
+plt.xticks(range(0, x_len, x_len//100), x_labels[::x_len//100])
 plt.gca().legend(loc=2)
 # plt.hlines(33.6, 0, 57, color='red', linestyles='dashed', linewidth=0.75)
 #plt.gca().set_xticklabels(x_labels)

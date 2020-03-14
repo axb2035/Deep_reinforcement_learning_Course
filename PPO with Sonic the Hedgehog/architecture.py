@@ -10,6 +10,7 @@ def conv_layer(inputs, filters, kernel_size, strides, gain=1.0):
                             filters=filters,
                             kernel_size=kernel_size,
                             strides=(strides, strides),
+                            padding='same',
                             activation=tf.nn.relu,
                             kernel_initializer=tf.orthogonal_initializer(gain=gain))
 
