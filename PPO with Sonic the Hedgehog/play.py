@@ -28,8 +28,8 @@ config.gpu_options.allow_growth = True
 
 with tf.Session(config=config):
     
-    env = DummyVecEnv([env.make_test])
-    update = 2640
+    env = DummyVecEnv([env.make_play])
+    update = 6430
     
     play_result = model.play(policy=policies.PPOPolicy, 
                              env=env, 
@@ -39,12 +39,29 @@ with tf.Session(config=config):
 
 env.close()
 
-# The Simonini code scales the reward by 0.01 to work better
+header = "action,reward"
+key_list = list(info[0][0].keys())
+for k in range(len(key_list)):
+    header = header + "," + key_list[k]
+
+# header = [header + key_list[k] for k in range(len(key_list))]
+
+# print([k for k in info[0][0].keys()])
+# header = "action,reward," + [k for k in list(info[0][0].keys())]
+
+test_info = info[:10]
+
+
+
+test_data = np.concatenate([actions[:10], rewards[:10], test_info], axis=1)
+np.savetxt(r'test.csv', test_data, header=header)
+
+# The Simonini code scales the reward by *0.01 to work better
 # with PPO.
 
-flat_rewards = [item for sublist in rewards for item in sublist]
-#flat_rewards = np.array(flat_rewards)*100
-cum_rewards = np.cumsum(flat_rewards)
+# flat_rewards = [item for sublist in rewards for item in sublist]
+# flat_rewards = np.array(flat_rewards)/0.01
+# cum_rewards = np.cumsum(flat_rewards)
 
 # from matplotlib import pyplot as plt
 # if actions != -1:
@@ -59,34 +76,42 @@ cum_rewards = np.cumsum(flat_rewards)
 #     plt.gca().set_ylabel('Count')
 #     plt.title('Model ' + str(update) + ' - First 1000 actions')
 
-from matplotlib import pyplot as plt
-plt.plot(rewards, linewidth=0.75 , color='orange')
-plt.gca().set_ylabel('Reward')
-plt.gca().set_xlabel('Step')
-plt.title('Model ' + str(update) + ' - Score: ' + str(score[0]))
+# from matplotlib import pyplot as plt
+# plt.plot(rewards, linewidth=0.75 , color='orange')
+# plt.gca().set_ylabel('Reward')
+# plt.gca().set_xlabel('Step')
+# plt.title('Model ' + str(update) + ' - Score: ' + str(score[0]))
 
-ax2 = plt.gca().twinx() 
-plt.plot(cum_rewards, label='Cumulative', linewidth=0.75)
-plt.gca().set_ylabel('Cumulative sum of Rewards')
-ax2.legend(loc=7)
+# ax2 = plt.gca().twinx() 
+# plt.plot(cum_rewards, label='Cumulative', linewidth=0.75)
+# plt.gca().set_ylabel('Cumulative sum of Rewards')
+# ax2.legend(loc=7)
 
-plt.show()
+# plt.show()
 
-actions[5]
-info[3000]
-flat_rewards[5]
+# actions[5]
+# info[4499]
+# flat_rewards[5]
 
-offset_x = info[0][0]['offset_x']
+# offset_x = info[0][0]['offset_x']
 
 
-x_progress = [info[i][0]['x'] + offset_x  for i in range(len(info))]
-x_diff = [info[i][0]['x'] - info[i][0]['screen_x']  for i in range(len(info))]
+# x_progress = [info[i][0]['x'] + offset_x  for i in range(len(info))]
+# x_diff = [info[i][0]['x'] - info[i][0]['screen_x']  for i in range(len(info))]
+# l_e_bonus = [info[i][0]['level_end_bonus'] for i in range(len(info))]
 
-plt.plot(x_diff)
-plt.gca().set_ylabel('x Progress')
-plt.gca().set_xlabel('Step')
-plt.title('Model ' + str(update) + ' - x progress: ' + str(score[0]))
-plt.show()
+
+# plt.plot(x_progress)
+# plt.gca().set_ylabel('x Progress')
+# plt.gca().set_xlabel('Step')
+# plt.title('Model ' + str(update) + ' - x progress: ' + str(score[0]))
+# plt.show()
+
+# plt.plot(l_e_bonus)
+# plt.gca().set_ylabel('Level End Bonus?')
+# plt.gca().set_xlabel('Step')
+# plt.title('Model ' + str(update) + ' - x progress: ' + str(score[0]))
+# plt.show()
 
 
 

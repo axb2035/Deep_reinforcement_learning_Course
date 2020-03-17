@@ -180,7 +180,9 @@ def make_test():
     # ]
     
     # Here we add record because we want to output a video
-    env = make(game="SonicAndKnuckles3-Genesis", state="AngelIslandZone.Act1")
+    env = make(game="SonicAndKnuckles3-Genesis", 
+               state="AngelIslandZone.Act1", 
+               bk2dir="./records")
 
     # Build the actions array, 
     env = ActionsDiscretizer(env)
@@ -201,6 +203,34 @@ def make_test():
 
     return env
 
+def make_play():
+    """
+    Create an environment with some standard wrappers.
+    """
+    
+    # Here we add record because we want to output a video
+    env = make(game="SonicAndKnuckles3-Genesis", 
+               state="AngelIslandZone.Act1", 
+               bk2dir="./play_records")
+
+    # Build the actions array, 
+    env = ActionsDiscretizer(env)
+
+    # Scale the rewards
+    env = RewardScaler(env)
+
+    # PreprocessFrame
+    env = PreprocessFrame(env)
+
+    # Stack 4 frames
+    env = FrameStack(env, 4)
+
+    # Allow back tracking that helps agents are not discouraged too heavily
+    # from exploring backwards if there is no way to advance
+    # head-on in the level.
+    env = AllowBacktracking(env)
+
+    return env
 
 def make_train_0():
     return make_env(0)

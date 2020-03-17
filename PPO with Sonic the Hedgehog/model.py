@@ -371,9 +371,9 @@ def learn(policy,
                 vf_coef=vf_coef,
                 max_grad_norm=max_grad_norm)
     
-    model_num = 5250
+    model_num = 7400
     start_update = 1
-    best_test = 37.2213
+    best_test = 51.5
     
     # Load the model if you want to continue training
     if model_num > 1:
@@ -646,7 +646,7 @@ def play(policy, env, update):
     print("Score ", score)
     
     env.close()
-    return (action_list[0:999], reward_list, score, info_list)
+    return (action_list, reward_list, score, info_list)
 
 
 

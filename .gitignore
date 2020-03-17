@@ -6,4 +6,7 @@
 *.index
 checkpoint
 *.meta
+logs/
+test_data/
+
 
